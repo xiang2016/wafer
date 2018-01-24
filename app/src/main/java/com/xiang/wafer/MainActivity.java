@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
 import android.view.View;
 
 import com.xiang.wafer.databinding.ActivityMainBinding;
@@ -28,25 +27,22 @@ public class MainActivity extends AppCompatActivity {
     private MainFileAdpter adapter;
     private String smbPath = "smb://zhaomx:123456@192.168.0.108/movie/";
     private ActivityMainBinding binding;
+    private SmbFile currentSmbFileDir;
+    private SmbFileClickCallback callback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        binding.setCurrentPath(getCurrentPath(smbPath));
+        binding.setCurrentPath("\\\\192.168.0.108/movie/");
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MainFileAdpter(new SmbFile[]{}, new SmbFileClickCallback() {
+        callback = new SmbFileClickCallback() {
             @Override
             public void onSmbFileClick(SmbFile smbFile) {
                 try {
                     if (smbFile.isDirectory()) {
-                        binding.setCurrentPath(smbFile.getCanonicalPath());
-                        Log.d(TAG, "run: getCanonicalPath" + smbFile.getCanonicalPath());
-                        Log.d(TAG, "run: getPath" + smbFile.getPath());
-                        Log.d(TAG, "run: getUncPath" + smbFile.getUncPath());
-                        Log.d(TAG, "run: getDfsPath" + smbFile.getDfsPath());
-                        Log.d(TAG, "run: getParent" + smbFile.getParent());
-                        Log.d(TAG, "run: getShare" + smbFile.getShare());
+                        currentSmbFileDir = smbFile;
+                        binding.setCurrentPath(smbFile.getUncPath());
                         adapter.setCurrentSmbFiles(smbFile.listFiles());
                         handler.sendEmptyMessage(1);
                     }
@@ -54,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        });
+        };
+        adapter = new MainFileAdpter(new SmbFile[]{}, callback);
         binding.recyclerView.setAdapter(adapter);
         binding.txt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         super.run();
                         try {
-                            SmbFile remoteFile = new SmbFile(smbPath);
-                            adapter.setCurrentSmbFiles(remoteFile.listFiles());
+                            currentSmbFileDir = new SmbFile(smbPath);
+                            adapter.setCurrentSmbFiles(currentSmbFileDir.listFiles());
                             handler.sendEmptyMessage(1);
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
@@ -78,7 +75,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private String getCurrentPath(String smbPath) {
-        return smbPath;
+    @Override
+    public void onBackPressed() {
+        if (currentSmbFileDir != null && !currentSmbFileDir.getParent().equals("smb://")) {
+            try {
+                callback.onSmbFileClick(new SmbFile(currentSmbFileDir.getParent()));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                super.onBackPressed();
+            }
+        } else {
+            super.onBackPressed();
+        }
     }
 }
