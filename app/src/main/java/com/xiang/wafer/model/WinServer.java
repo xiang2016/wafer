@@ -9,6 +9,11 @@ package com.xiang.wafer.model;
  * </pre>
  */
 public class WinServer {
-    private String host;
-    private String sharePath;
+    public String host;
+    public String sharePath;
+
+    public WinServer(String host, String sharePath) {
+        this.host = host;
+        this.sharePath = sharePath;
+    }
 }

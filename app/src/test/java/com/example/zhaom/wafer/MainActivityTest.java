@@ -25,6 +25,7 @@ import jcifs.smb.SmbFileOutputStream;
  * </pre>
  */
 public class MainActivityTest {
+
     @Test
     public void name() throws Exception {
         SmbFile remoteFile = new SmbFile("smb://test:123456@DESKTOP-4928KB8/share/");

@@ -5,15 +5,30 @@
 
     <data>
 
+        <import type="android.view.View" />
+
+        <variable
+            name="user"
+            type="com.xiang.wafer.model.User" />
+
+        <variable
+            name="server"
+            type="com.xiang.wafer.model.WinServer" />
+
         <variable
             name="currentPath"
             type="String" />
+
+        <variable
+            name="loadStatus"
+            type="int" />
     </data>
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.example.zhaom.wafer.MainActivity">
+
 
         <TextView
             android:id="@+id/txt"
@@ -41,6 +56,41 @@
             app:layout_constraintTop_toBottomOf="@+id/txt"
             tools:listitem="@layout/item_file" />
 
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="@{loadStatus != 2?View.VISIBLE:View.INVISIBLE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{user.userName + ":@" + server.host}'
+                tools:text="user:@192.108.0.1" />
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{loadStatus == 1?View.VISIBLE:View.INVISIBLE}" />
+
+            <Button
+                android:id="@+id/btn_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@android:string/ok" />
+
+            <Button
+                android:id="@+id/btn_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="file" />
+
+        </LinearLayout>
     </android.support.constraint.ConstraintLayout>
 </layout>
 
