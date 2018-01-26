@@ -1,6 +1,7 @@
 package com.example.zhaom.wafer;
 
 import android.net.Uri;
+import android.util.Log;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,5 +32,17 @@ public class UriTest {
         Assert.assertNotEquals("http://127.0.0.1:8080/smb/zhaomx:123456@192.168.0.108/movie/一二三.txt", Uri.encode(uri.toString()));
     }
 
-
+    @Test
+    public void uriStart() throws Exception {
+        Uri parse = Uri.parse("/smb/zhaomx@192.168.0.108/movie/一二三.txt");
+        Assert.assertEquals("smb",parse.getPathSegments().get(0));
+    }
+    @Test
+    public void getPathSegmentsTest() throws Exception {
+//        Uri uri = Uri.parse("/smb/zhaomx:123456@192.168.0.108/movie/一二三.txt");
+        Uri uri = Uri.parse("smb://zhaomx:123456@192.168.0.108/movie/一二三.txt");
+        Log.d("TEST", "getPathSegments: " + uri.getPathSegments().toString());
+        Log.d("TEST", "getLastPathSegment: " + uri.getLastPathSegment());
+        Assert.assertEquals(uri.getPathSegments().get(0), "smb");
+    }
 }
