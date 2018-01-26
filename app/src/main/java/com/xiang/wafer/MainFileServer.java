@@ -20,15 +20,17 @@ import fi.iki.elonen.NanoHTTPD;
  * </pre>
  */
 public class MainFileServer extends NanoHTTPD {
+    public static final int PORT = 8080;
+    public static final String URL = "http://127.0.0.1:" + PORT;
     private static final String TAG = "MainFileServer";
+
     public MainFileServer() {
-        super(8080);
+        super(PORT);
         try {
             start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("\nRunning! Point your browsers to http://localhost:8080/ \n");
     }
 
     @Override
@@ -37,14 +39,7 @@ public class MainFileServer extends NanoHTTPD {
 //            http:127.0.0.1:8080/smb/192.168.0.101/movie/asdf.txt"
             //uri：用于标示文件资源的字符串，这里即是文件路径
             String uri = session.getUri();
-            Log.d(TAG, "serve:toString " + session.toString());
             Log.d(TAG, "serve:getUri " + session.getUri());
-            Log.d(TAG, "serve:getQueryParameterString " + session.getQueryParameterString());
-            Log.d(TAG, "serve:getRemoteHostName " + session.getRemoteHostName());
-            Log.d(TAG, "serve:getRemoteIpAddress " + session.getRemoteIpAddress());
-            Log.d(TAG, "serve:getHeaders " + session.getHeaders().toString());
-            Log.d(TAG, "serve:getParameters " + session.getParameters().toString());
-            Log.d(TAG, "serve:getParms " + session.getParms().toString());
             //文件输入流
 //            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath()
