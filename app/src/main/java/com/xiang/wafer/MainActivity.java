@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         };
         adapter = new MainFileAdpter(new SmbFile[]{}, callback);
         binding.recyclerView.setAdapter(adapter);
-        binding.btnStart.setOnClickListener(view -> {
+        binding.layoutLogin.btnStart.setOnClickListener(view -> {
             binding.setLoadStatus(1);
             appExecutors.diskIO().execute(() -> {
                 try {

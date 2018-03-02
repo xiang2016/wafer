@@ -58,6 +58,7 @@
             tools:listitem="@layout/item_file" />
 
         <include
+            android:id="@+id/layout_login"
             layout="@layout/layout_login"
             android:gravity="center"
             android:visibility="@{loadStatus != 2?View.VISIBLE:View.INVISIBLE}"
