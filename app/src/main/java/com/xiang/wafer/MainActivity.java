@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         handler = new MainHandler(this);
         binding.setServer(winServer);
         binding.setUser(user);
-        binding.setCurrentPath("\\\\192.168.0.108/");
+        binding.setCurrentPath("//192.168.0.108/");
         binding.setLoadStatus(0);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         callback = smbFile -> {

@@ -3,6 +3,9 @@ package com.example.zhaom.wafer;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * <pre>
  *     author : ZhaoMiXiang
@@ -34,5 +37,12 @@ public class StringTest {
                 .replace("/smb", "smb:/")
                 .replace("@", ":" + password + "@");
         Assert.assertEquals("smb://zhaomx:123456@192.168.0.108/movie/一二三.txt", smbPath);
+    }
+
+    @Test
+    public void stream() throws Exception {
+        List<String> names = new ArrayList<>();
+        names.stream().map(s -> s + "123").forEach(System.out::println);
+        String data= "Hello World";
     }
 }

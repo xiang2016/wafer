@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -56,41 +57,13 @@
             app:layout_constraintTop_toBottomOf="@+id/txt"
             tools:listitem="@layout/item_file" />
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+        <include
+            layout="@layout/layout_login"
             android:gravity="center"
-            android:orientation="vertical"
             android:visibility="@{loadStatus != 2?View.VISIBLE:View.INVISIBLE}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text='@{user.userName + ":@" + server.host}'
-                tools:text="user:@192.108.0.1" />
-
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="@{loadStatus == 1?View.VISIBLE:View.INVISIBLE}" />
-
-            <Button
-                android:id="@+id/btn_start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@android:string/ok" />
-
-            <Button
-                android:id="@+id/btn_file"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="file" />
-
-        </LinearLayout>
+            bind:currentPath="@{currentPath}"
+            bind:loadStatus="@{loadStatus}"
+            bind:user="@{user}" />
     </android.support.constraint.ConstraintLayout>
 </layout>
 
