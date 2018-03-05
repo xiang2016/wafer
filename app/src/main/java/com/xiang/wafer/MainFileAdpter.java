@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 
 import com.xiang.wafer.databinding.ItemFileBinding;
 
+import java.util.Collections;
+import java.util.List;
+
 import jcifs.smb.SmbFile;
 
 /**
@@ -17,13 +20,13 @@ import jcifs.smb.SmbFile;
  *     version: 1.0
  * </pre>
  */
-public class MainFileAdpter  extends RecyclerView.Adapter<MainFileAdpter.FileHolder> {
-    private SmbFile[] currentSmbFiles;
+public class MainFileAdpter extends RecyclerView.Adapter<MainFileAdpter.FileHolder> {
+    private List<SmbFile> currentSmbFiles;
     private SmbFileClickCallback callback;
 
-    public MainFileAdpter(SmbFile[] currentSmbFiles,SmbFileClickCallback callback) {
-        this.currentSmbFiles = currentSmbFiles;
+    public MainFileAdpter(SmbFileClickCallback callback) {
         this.callback = callback;
+        currentSmbFiles = Collections.emptyList();
     }
 
     @Override
@@ -34,17 +37,17 @@ public class MainFileAdpter  extends RecyclerView.Adapter<MainFileAdpter.FileHol
 
     @Override
     public void onBindViewHolder(FileHolder holder, int position) {
-        holder.binding.setSmbFile(currentSmbFiles[position]);
+        holder.binding.setSmbFile(currentSmbFiles.get(position));
         holder.binding.setCallback(callback);
         holder.binding.executePendingBindings();
     }
 
     @Override
     public int getItemCount() {
-        return currentSmbFiles.length;
+        return currentSmbFiles.size();
     }
 
-    public void setCurrentSmbFiles(SmbFile[] currentSmbFiles) {
+    public void setCurrentSmbFiles(List<SmbFile> currentSmbFiles) {
         this.currentSmbFiles = currentSmbFiles;
     }
 

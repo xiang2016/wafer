@@ -51,6 +51,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
+            android:visibility="@{loadStatus == 0?View.VISIBLE:View.INVISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -60,10 +61,15 @@
         <include
             android:id="@+id/layout_login"
             layout="@layout/layout_login"
-            android:gravity="center"
-            android:visibility="@{loadStatus != 2?View.VISIBLE:View.INVISIBLE}"
-            bind:currentPath="@{currentPath}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{loadStatus != 0?View.VISIBLE:View.INVISIBLE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             bind:loadStatus="@{loadStatus}"
+            bind:server="@{server}"
             bind:user="@{user}" />
     </android.support.constraint.ConstraintLayout>
 </layout>

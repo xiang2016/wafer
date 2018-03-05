@@ -28,7 +28,7 @@ public class MainActivityTest {
 
     @Test
     public void name() throws Exception {
-        SmbFile remoteFile = new SmbFile("smb://test:123456@DESKTOP-4928KB8/share/");
+        SmbFile remoteFile = new SmbFile("smb://zhaomx:123456@192.168.0.108/");
         //这一句很重要
         remoteFile.connect();
         showFileList(remoteFile, "");

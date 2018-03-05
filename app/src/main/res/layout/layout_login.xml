@@ -21,33 +21,29 @@
     </data>
 
     <android.support.constraint.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/name_text"
+            android:id="@+id/userName_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:text="@string/app_name"
+            android:text="userName"
             app:layout_constraintBottom_toTopOf="@+id/guideline"
-            app:layout_constraintEnd_toStartOf="@+id/name"
+            app:layout_constraintEnd_toStartOf="@+id/userName"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="user:@192.108.0.1" />
+            app:layout_constraintTop_toBottomOf="@+id/password_text" />
 
-        <TextView
-            android:id="@+id/name"
+        <EditText
+            android:id="@+id/userName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:text='@{user.userName + ":@" + server.host}'
+            android:hint="userName"
+            android:text='@{user.userName}'
             app:layout_constraintBottom_toTopOf="@+id/guideline"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/name_text"
+            app:layout_constraintStart_toEndOf="@+id/userName_text"
+            app:layout_constraintTop_toBottomOf="@+id/password"
             tools:text="user:@192.108.0.1" />
 
 
@@ -55,27 +51,20 @@
             android:id="@+id/password_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/app_name"
-            app:layout_constraintBottom_toTopOf="@+id/name_text"
+            android:text="password"
+            app:layout_constraintBottom_toTopOf="@+id/userName_text"
             app:layout_constraintEnd_toStartOf="@+id/password"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="user:@192.108.0.1" />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <EditText
             android:id="@+id/password"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="70dp"
-            android:layout_marginTop="8dp"
-            android:text='@{user.userName + ":@" + server.host}'
-            app:layout_constraintBottom_toTopOf="@+id/name"
+            android:hint="password"
+            android:inputType="textPassword"
+            android:text='@{user.password}'
+            app:layout_constraintBottom_toTopOf="@+id/userName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/password_text"
             app:layout_constraintTop_toTopOf="parent"
@@ -89,7 +78,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:visibility="@{loadStatus == 1?View.VISIBLE:View.INVISIBLE}"
+            android:visibility="@{loadStatus == 2?View.VISIBLE:View.INVISIBLE}"
             app:layout_constraintBottom_toTopOf="@+id/btn_start"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

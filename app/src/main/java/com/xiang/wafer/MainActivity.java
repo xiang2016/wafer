@@ -1,25 +1,24 @@
 package com.xiang.wafer;
 
 import android.Manifest;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.xiang.wafer.databinding.ActivityMainBinding;
 import com.xiang.wafer.model.User;
 import com.xiang.wafer.model.WinServer;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 
 import jcifs.smb.SmbException;
@@ -32,77 +31,86 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private MainFileAdpter adapter;
-    private String smbPath = "smb://zhaomx:123456@192.168.0.108/";
     private ActivityMainBinding binding;
     private SmbFile currentSmbFileDir;
     private SmbFileClickCallback callback;
-    private MainHandler handler;
     private MainFileServer mainFileServer;
     private WinServer winServer;
     private User user;
-    private AppExecutors appExecutors;
     private AlertDialog fileAlertDialog;
     private Uri uriFile;
+    private MainViewModel mainViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        winServer = new WinServer("192.168.0.108", "");
+        user = new User("zhaomx", "123456");
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        MainViewModel.Factory factory = new MainViewModel.Factory(
+                new SmbFileRepository(new AppExecutors()), user, winServer);
+        mainViewModel = ViewModelProviders.of(this, factory).get(MainViewModel.class);
+        mainViewModel.getSmbfiles().observe(this, smbFiles -> {
+            Log.d(TAG, "onCreate: " + smbFiles.toString());
+            adapter.setCurrentSmbFiles(smbFiles);
+            adapter.notifyDataSetChanged();
+            binding.setLoadStatus(0);
+        });
+        mainViewModel.getSmbfile().observe(this, smbFile ->
+                {
+                    if (smbFile == null) {
+                        Toast.makeText(this, "smbfile null", Toast.LENGTH_SHORT).show();
+                    } else {
+                        binding.setCurrentPath(smbFile.getUncPath());
+                        currentSmbFileDir = smbFile;
+                    }
+                }
+        );
         initParams();
-        int permission = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
-                    1);
-        }
+        myCheckPermission();
         mainFileServer = new MainFileServer();
     }
 
+
     private void initParams() {
-        appExecutors = new AppExecutors();
-        winServer = new WinServer("192.168.0.108", "");
-        user = new User("zhaomx", "123456");
-        handler = new MainHandler(this);
         binding.setServer(winServer);
         binding.setUser(user);
         binding.setCurrentPath("//192.168.0.108/");
-        binding.setLoadStatus(0);
+        binding.setLoadStatus(1);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         callback = smbFile -> {
-            appExecutors.diskIO().execute(() -> {
-                try {
-                    if (smbFile.isDirectory()) {
-                        currentSmbFileDir = smbFile;
-                        binding.setCurrentPath(smbFile.getUncPath());
-                        adapter.setCurrentSmbFiles(smbFile.listFiles());
-                        handler.sendEmptyMessage(1);
-                    } else {
-                        Message message = Message.obtain();
-                        message.obj = smbFile.getPath();
-                        message.what = 2;
-                        handler.sendMessage(message);
-                    }
-                } catch (SmbException e) {
-                    e.printStackTrace();
+            try {
+                if (smbFile.isDirectory()) {
+//                    mainViewModel.getPath().setValue(smbFile.getUncPath());
+                } else {
+                    Uri uriSmb = Uri.parse(smbFile.getUncPath());
+                    Uri uri = Uri.parse(URL + File.separator +
+                            Uri.encode(uriSmb.getScheme() + File.separator +
+                                    getUserName(uriSmb.getUserInfo()) + "@" +
+                                    uriSmb.getHost() +
+                                    uriSmb.getEncodedPath()
+                            )
+                    );
+                    uriFile = uri;
+                    fileAlertDialog.setTitle(uri.getLastPathSegment());
+                    fileAlertDialog.setMessage(uri.toString());
+                    fileAlertDialog.show();
                 }
-            });
+            } catch (SmbException e) {
+                Toast.makeText(this, "SmbException" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
         };
-        adapter = new MainFileAdpter(new SmbFile[]{}, callback);
+        adapter = new MainFileAdpter(callback);
         binding.recyclerView.setAdapter(adapter);
         binding.layoutLogin.btnStart.setOnClickListener(view -> {
-            binding.setLoadStatus(1);
-            appExecutors.diskIO().execute(() -> {
-                try {
-                    currentSmbFileDir = new SmbFile(smbPath);
-                    adapter.setCurrentSmbFiles(currentSmbFileDir.listFiles());
-                    handler.sendEmptyMessage(1);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+            User user = binding.layoutLogin.getUser();
+            mainViewModel.getUser().setValue(user);
+            WinServer server = binding.getServer();
+            mainViewModel.getWinServer().setValue(server);
+            mainViewModel.getData(user, server);
         });
-        fileAlertDialog = new AlertDialog.Builder(MainActivity.this)
+        fileAlertDialog = new AlertDialog.Builder(this)
                 .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(uriFile, getMimeTypeForFile(uriFile.toString()));
@@ -124,44 +132,13 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
                 super.onBackPressed();
             }
-        } else {
+        } else if (binding.getLoadStatus() == 1) {
             super.onBackPressed();
-        }
-    }
-
-    static class MainHandler extends Handler {
-        private WeakReference<MainActivity> weakReference;
-
-        public MainHandler(MainActivity mainActivity) {
-            this.weakReference = new WeakReference<MainActivity>(mainActivity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            MainActivity mainActivity = weakReference.get();
-            switch (msg.what) {
-                case 1:
-                    mainActivity.binding.setLoadStatus(2);
-                    mainActivity.adapter.notifyDataSetChanged();
-                    break;
-                case 2:
-                    Uri uriSmb = Uri.parse((String) msg.obj);
-                    Uri uri = Uri.parse(URL + File.separator +
-                            Uri.encode(uriSmb.getScheme() + File.separator +
-                                    getUserName(uriSmb.getUserInfo()) + "@" +
-                                    uriSmb.getHost() +
-                                    uriSmb.getEncodedPath()
-                            )
-                    );
-                    mainActivity.uriFile = uri;
-                    mainActivity.fileAlertDialog.setTitle(uri.getLastPathSegment());
-                    mainActivity.fileAlertDialog.setMessage(uri.toString());
-                    mainActivity.fileAlertDialog.show();
-                    break;
-                default:
-
-                    break;
-            }
+        } else {
+            binding.setLoadStatus(1);
+            // 不显示登录 0
+            // 显示登录 不显示进度 1
+            // 显示登录 显示进度 2
         }
     }
 
@@ -178,5 +155,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         mainFileServer.stop();
         super.onDestroy();
+    }
+
+    private void myCheckPermission() {
+        int permission = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+        }
     }
 }
