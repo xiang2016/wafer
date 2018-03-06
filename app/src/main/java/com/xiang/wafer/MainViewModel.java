@@ -6,10 +6,11 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
+import android.text.TextUtils;
 
-import com.xiang.wafer.model.User;
-import com.xiang.wafer.model.WinServer;
+import com.xiang.wafer.model.Login;
 
+import java.util.Collections;
 import java.util.List;
 
 import jcifs.smb.SmbFile;
@@ -23,66 +24,84 @@ import jcifs.smb.SmbFile;
  * </pre>
  */
 public class MainViewModel extends ViewModel {
-//    private final MutableLiveData<String> mPath;
-    private final MutableLiveData<User> mUser = new MutableLiveData<>();
-    private final MutableLiveData<WinServer> mWinServer = new MutableLiveData<>();
+    private Login mLogin;
+    private final MutableLiveData<Integer> status = new MutableLiveData<>();
+    private final MutableLiveData<String> currentPath = new MutableLiveData<>();
+    // 不显示登录 0
+    // 显示登录 不显示进度 1
+    // 显示登录 显示进度 2
     private final LiveData<List<SmbFile>> smbfiles;
-    private final MediatorLiveData<SmbFile> smbfile;
-    private final SmbFileRepository mSmbFileRepository;
-    private LiveData<SmbFile> smbFileLiveData;
 
-    public MainViewModel(SmbFileRepository smbFileRepository, User user, WinServer winServer) {
-        mSmbFileRepository = smbFileRepository;
-        smbfile = new MediatorLiveData<>();
-//        smbfile.setValue(null);
-        smbfiles = Transformations.switchMap(smbfile, mSmbFileRepository::SmbFileList);
-//        mPath = new MediatorLiveData<>();
-//        mPath.setValue("");
-//        mPath.observeForever(s -> {
-//            smbfile.addSource(smbFileLiveData, smbfile::setValue);
-//        });
+    public MainViewModel(SmbFileRepository smbFileRepository) {
+        smbfiles = Transformations.switchMap(currentPath, input -> {
+            if (mLogin != null) {
+                if (!TextUtils.isEmpty(input)) {
+                    return smbFileRepository.SmbFileList(mLogin.getWinServe().host,
+                            mLogin.getUser().userName, mLogin.getUser().password,
+                            input.replace(mLogin.getWinServe().host + "/", ""));
+                } else {
+                    MutableLiveData<List<SmbFile>> data = new MediatorLiveData<>();
+                    data.setValue(Collections.emptyList());
+                    status.setValue(1);
+                    return data;
+                }
+            } else {
+                MutableLiveData<List<SmbFile>> data = new MediatorLiveData<>();
+                data.setValue(Collections.emptyList());
+                status.setValue(1);
+                return data;
+            }
+        });
+        status.setValue(1);
+        currentPath.setValue("");
     }
 
-    public MediatorLiveData<SmbFile> getSmbfile() {
-        return smbfile;
+    public Login getmLogin() {
+        return mLogin;
+    }
+
+    public void setmLogin(Login mLogin) {
+        this.mLogin = mLogin;
+    }
+
+    public MutableLiveData<String> getCurrentPath() {
+        return currentPath;
+    }
+
+    public MutableLiveData<Integer> getStatus() {
+        return status;
     }
 
     public LiveData<List<SmbFile>> getSmbfiles() {
         return smbfiles;
     }
 
-//    public MutableLiveData<String> getPath() {
-//        return mPath;
-//    }
-
-    public MutableLiveData<User> getUser() {
-        return mUser;
-    }
-
-    public MutableLiveData<WinServer> getWinServer() {
-        return mWinServer;
-    }
-
-    public void getData(User user, WinServer winServer) {
-        smbFileLiveData = mSmbFileRepository.SmbFile(winServer.host, user.userName, user.password, "");
+    public void goBack() {
+        String currentPath = getCurrentPath().getValue();
+        if (TextUtils.isEmpty(currentPath)) {
+            status.setValue(1);
+        } else {
+            getCurrentPath().setValue(handlePath(currentPath));
+        }
     }
 
     public static class Factory extends ViewModelProvider.NewInstanceFactory {
 
-        private final WinServer mServer;
-        private final User mUser;
         private final SmbFileRepository mSmbFileRepository;
 
-        public Factory(SmbFileRepository smbFileRepository, User user, WinServer winServer) {
-            mServer = winServer;
-            mUser = user;
+        public Factory(SmbFileRepository smbFileRepository) {
             mSmbFileRepository = smbFileRepository;
         }
 
         @Override
         public <T extends ViewModel> T create(Class<T> modelClass) {
             //noinspection unchecked
-            return (T) new MainViewModel(mSmbFileRepository, mUser, mServer);
+            return (T) new MainViewModel(mSmbFileRepository);
         }
+    }
+
+    private String handlePath(String path) {
+        String substring = path.substring(0, path.length() - 1);
+        return substring.substring(0, substring.lastIndexOf("/") + 1);
     }
 }

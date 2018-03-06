@@ -1,14 +1,13 @@
 package com.xiang.wafer;
 
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MediatorLiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
 
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -29,35 +28,29 @@ public class SmbFileRepository {
         this.appExecutors = appExecutors;
     }
 
-    public LiveData<SmbFile> SmbFile(String server, String userName, String password, String path) {
-        MutableLiveData<SmbFile> smbFileMutableLiveData = new MediatorLiveData<>();
+    public LiveData<List<SmbFile>> SmbFileList(String server, String userName, String password, String path) {
         String smbPath = String.format("smb://%1$s:%2$s@%3$s/%4$s", userName, password, server, path);
-        Log.d(TAG, "SmbFile: " +smbPath);
-        appExecutors.diskIO().execute(() -> {
-            try {
-                smbFileMutableLiveData.postValue(new SmbFile(smbPath));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                smbFileMutableLiveData.postValue(null);
-            }
-        });
-        return smbFileMutableLiveData;
-    }
+        Log.d(TAG, "SmbFile: " + smbPath);
+        return new LiveData<List<SmbFile>>() {
+            AtomicBoolean started = new AtomicBoolean(false);
 
-    public LiveData<List<SmbFile>> SmbFileList(SmbFile smbfile) {
-        MutableLiveData<List<SmbFile>> liveData = new MediatorLiveData<>();
-        appExecutors.diskIO().execute(() -> {
-            if (smbfile != null) {
-                try {
-                    List<SmbFile> smbFiles = Arrays.asList(smbfile.listFiles());
-                    liveData.postValue(smbFiles);
-                    Log.d(TAG, "SmbFileList: " + smbFiles.toString());
-                } catch (SmbException e) {
-                    e.printStackTrace();
+            @Override
+            protected void onActive() {
+                super.onActive();
+                if (!started.compareAndSet(false, true)) {
+                    return;
                 }
+                appExecutors.diskIO().execute(() -> {
+                    try {
+                        SmbFile smbFile = new SmbFile(smbPath);
+                        List<SmbFile> smbFiles = Arrays.asList(smbFile.listFiles());
+                        postValue(smbFiles);
+                    } catch (SmbException | MalformedURLException e) {
+                        postValue(Collections.emptyList());
+                        e.printStackTrace();
+                    }
+                });
             }
-        });
-        liveData.postValue(Collections.emptyList());
-        return liveData;
+        };
     }
 }

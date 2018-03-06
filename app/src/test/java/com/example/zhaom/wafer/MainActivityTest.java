@@ -1,5 +1,8 @@
 package com.example.zhaom.wafer;
 
+import android.net.Uri;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
@@ -35,6 +38,8 @@ public class MainActivityTest {
     }
 
     public static void showFileList(SmbFile dir, String space) {
+        System.out.println("UncPath " + dir.getUncPath());
+        System.out.println("Path " + dir.getPath());
         try {
             if (dir.isDirectory()) {
                 System.out.println(space + dir.getName());
@@ -46,13 +51,13 @@ public class MainActivityTest {
                 System.out.println(space + dir.getName());
             }
         } catch (SmbException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
     @Test
     public void smbGetTest() throws Exception {
-        smbGet("","E:\\jcifs");
+        smbGet("", "E:\\jcifs");
     }
 
     /**
@@ -128,5 +133,31 @@ public class MainActivityTest {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Test
+    public void stringTest() throws Exception {
+        String path = "smb://zhaomx:123456@192.168.0.108/D$/";
+        String path2 = "192.168.0.108/movie/new1/new/";
+        String path3 = "192.168.0.108/";
+
+        Assert.assertEquals("192.168.0.108/D$/", path.substring(path.indexOf("@") + 1));
+        Assert.assertEquals("192.168.0.108/movie/new1/", handlePath(path2));
+        Assert.assertEquals("", handlePath(path3));
+    }
+
+    private String handlePath(String path) {
+        String substring = path.substring(0, path.length() - 1);
+        return substring.substring(0,substring.lastIndexOf("/") + 1);
+    }
+
+    @Test
+    public void uriTest() throws Exception {
+//        UncPath \\192.168.0.108
+//        Path smb://zhaomx:123456@192.168.0.108/
+        String  uncpPath = "UncPath \\\\192.168.0.108";
+        String  path = "smb://zhaomx:123456@192.168.0.108/";
+        Uri uriSmb = Uri.parse(path);
+        System.out.println(uriSmb.getUserInfo());
     }
 }

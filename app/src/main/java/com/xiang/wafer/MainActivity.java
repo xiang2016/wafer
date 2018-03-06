@@ -11,18 +11,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.xiang.wafer.databinding.ActivityMainBinding;
+import com.xiang.wafer.model.Login;
 import com.xiang.wafer.model.User;
 import com.xiang.wafer.model.WinServer;
 
 import java.io.File;
-import java.net.MalformedURLException;
 
 import jcifs.smb.SmbException;
-import jcifs.smb.SmbFile;
 
 import static com.xiang.wafer.MainFileServer.URL;
 import static fi.iki.elonen.NanoHTTPD.getMimeTypeForFile;
@@ -32,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
 
     private MainFileAdpter adapter;
     private ActivityMainBinding binding;
-    private SmbFile currentSmbFileDir;
     private SmbFileClickCallback callback;
     private MainFileServer mainFileServer;
     private WinServer winServer;
@@ -47,25 +44,21 @@ public class MainActivity extends AppCompatActivity {
         winServer = new WinServer("192.168.0.108", "");
         user = new User("zhaomx", "123456");
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        MainViewModel.Factory factory = new MainViewModel.Factory(
-                new SmbFileRepository(new AppExecutors()), user, winServer);
+        MainViewModel.Factory factory = new MainViewModel.Factory(new SmbFileRepository(new AppExecutors()));
         mainViewModel = ViewModelProviders.of(this, factory).get(MainViewModel.class);
         mainViewModel.getSmbfiles().observe(this, smbFiles -> {
-            Log.d(TAG, "onCreate: " + smbFiles.toString());
+            if (smbFiles.size() > 0) {
+                binding.setLoadStatus(0);
+            }
             adapter.setCurrentSmbFiles(smbFiles);
             adapter.notifyDataSetChanged();
-            binding.setLoadStatus(0);
         });
-        mainViewModel.getSmbfile().observe(this, smbFile ->
-                {
-                    if (smbFile == null) {
-                        Toast.makeText(this, "smbfile null", Toast.LENGTH_SHORT).show();
-                    } else {
-                        binding.setCurrentPath(smbFile.getUncPath());
-                        currentSmbFileDir = smbFile;
-                    }
-                }
-        );
+        mainViewModel.getStatus().observe(this, integer -> {
+            binding.setLoadStatus(integer.intValue());
+        });
+        mainViewModel.getCurrentPath().observe(this, s -> {
+            binding.setCurrentPath(s);
+        });
         initParams();
         myCheckPermission();
         mainFileServer = new MainFileServer();
@@ -75,15 +68,16 @@ public class MainActivity extends AppCompatActivity {
     private void initParams() {
         binding.setServer(winServer);
         binding.setUser(user);
-        binding.setCurrentPath("//192.168.0.108/");
         binding.setLoadStatus(1);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         callback = smbFile -> {
             try {
                 if (smbFile.isDirectory()) {
-//                    mainViewModel.getPath().setValue(smbFile.getUncPath());
+                    String path = smbFile.getPath();
+                    String currentPath = path.substring(path.indexOf("@") + 1);
+                    mainViewModel.getCurrentPath().setValue(currentPath);
                 } else {
-                    Uri uriSmb = Uri.parse(smbFile.getUncPath());
+                    Uri uriSmb = Uri.parse(smbFile.getPath());
                     Uri uri = Uri.parse(URL + File.separator +
                             Uri.encode(uriSmb.getScheme() + File.separator +
                                     getUserName(uriSmb.getUserInfo()) + "@" +
@@ -104,11 +98,14 @@ public class MainActivity extends AppCompatActivity {
         adapter = new MainFileAdpter(callback);
         binding.recyclerView.setAdapter(adapter);
         binding.layoutLogin.btnStart.setOnClickListener(view -> {
+            Login login = new Login();
             User user = binding.layoutLogin.getUser();
-            mainViewModel.getUser().setValue(user);
             WinServer server = binding.getServer();
-            mainViewModel.getWinServer().setValue(server);
-            mainViewModel.getData(user, server);
+            login.setUser(user);
+            login.setWinServe(server);
+            mainViewModel.setmLogin(login);
+            mainViewModel.getCurrentPath().setValue(binding.getServer().host + "/");
+            binding.setLoadStatus(2);
         });
         fileAlertDialog = new AlertDialog.Builder(this)
                 .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
@@ -125,20 +122,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (currentSmbFileDir != null && !currentSmbFileDir.getParent().equals("smb://")) {
-            try {
-                callback.onSmbFileClick(new SmbFile(currentSmbFileDir.getParent()));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                super.onBackPressed();
-            }
-        } else if (binding.getLoadStatus() == 1) {
+        if (binding.getLoadStatus() == 1) {
             super.onBackPressed();
         } else {
-            binding.setLoadStatus(1);
-            // 不显示登录 0
-            // 显示登录 不显示进度 1
-            // 显示登录 显示进度 2
+            mainViewModel.goBack();
         }
     }
 
