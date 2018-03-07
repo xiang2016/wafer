@@ -34,9 +34,14 @@ public class UriTest {
 
     @Test
     public void uriStart() throws Exception {
+//          serve:getUri /smb/zhaomx@192.168.0.108/movie/一二三.txt
+//          serve: smb://zhaomx:123456@192.168.0.108/movie/一二三.txt
         Uri parse = Uri.parse("/smb/zhaomx@192.168.0.108/movie/一二三.txt");
-        Assert.assertEquals("smb",parse.getPathSegments().get(0));
+        Assert.assertEquals("smb", parse.getPathSegments().get(0));
+        Assert.assertEquals("zhaomx", parse.getUserInfo());
+        System.out.println(parse.getPath());
     }
+
     @Test
     public void getPathSegmentsTest() throws Exception {
 //        Uri uri = Uri.parse("/smb/zhaomx:123456@192.168.0.108/movie/一二三.txt");

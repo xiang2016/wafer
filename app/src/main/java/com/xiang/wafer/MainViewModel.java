@@ -60,7 +60,7 @@ public class MainViewModel extends ViewModel {
         return mLogin;
     }
 
-    public void setmLogin(Login mLogin) {
+    public void setLogin(Login mLogin) {
         this.mLogin = mLogin;
     }
 

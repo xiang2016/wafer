@@ -16,4 +16,8 @@ public class WinServer {
         this.host = host;
         this.sharePath = sharePath;
     }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
 }

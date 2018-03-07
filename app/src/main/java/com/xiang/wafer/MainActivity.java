@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         winServer = new WinServer("192.168.0.108", "");
-        user = new User("zhaomx", "123456");
+        user = new User("", "");
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         MainViewModel.Factory factory = new MainViewModel.Factory(new SmbFileRepository(new AppExecutors()));
         mainViewModel = ViewModelProviders.of(this, factory).get(MainViewModel.class);
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         });
         mainViewModel.getStatus().observe(this, integer -> {
-            binding.setLoadStatus(integer.intValue());
+            binding.setLoadStatus(integer);
         });
         mainViewModel.getCurrentPath().observe(this, s -> {
             binding.setCurrentPath(s);
@@ -103,10 +103,12 @@ public class MainActivity extends AppCompatActivity {
             WinServer server = binding.getServer();
             login.setUser(user);
             login.setWinServe(server);
-            mainViewModel.setmLogin(login);
+            mainViewModel.setLogin(login);
             mainViewModel.getCurrentPath().setValue(binding.getServer().host + "/");
+            mainFileServer.setLogin(login);
             binding.setLoadStatus(2);
         });
+
         fileAlertDialog = new AlertDialog.Builder(this)
                 .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);

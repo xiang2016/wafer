@@ -1,9 +1,11 @@
 package com.example.zhaom.wafer;
 
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,6 +45,17 @@ public class StringTest {
     public void stream() throws Exception {
         List<String> names = new ArrayList<>();
         names.stream().map(s -> s + "123").forEach(System.out::println);
-        String data= "Hello World";
+        String data = "Hello World";
+    }
+
+    @Test
+    public void parseTest() throws Exception {
+        String uri = "/smb/zhaomx@192.168.0.108/movie/一二三.txt";
+        String[] split = uri.split("/");
+        Arrays.stream(split).forEach(System.out::println);
+        String[] strings = split[2].split("@");
+        Assert.assertEquals("smb", split[1]);
+        Assert.assertEquals("zhaomx", strings[0]);
+        Assert.assertEquals("192.168.0.108", strings[1]);
     }
 }

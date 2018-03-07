@@ -25,49 +25,76 @@
         android:layout_height="wrap_content">
 
         <TextView
+            android:id="@+id/host_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="host"
+            app:layout_constraintBottom_toTopOf="@id/userName_text"
+            app:layout_constraintRight_toLeftOf="@+id/host"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/host"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:afterTextChanged="@{s -> server.setHost(s.toString())}"
+            android:hint="host"
+            android:text='@{server.host}'
+            app:layout_constraintBottom_toTopOf="@id/userName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/host_text"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="user:@192.108.0.1" />
+
+        <TextView
             android:id="@+id/userName_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="userName"
-            app:layout_constraintBottom_toTopOf="@+id/guideline"
-            app:layout_constraintEnd_toStartOf="@+id/userName"
+            app:layout_constraintBottom_toTopOf="@id/password_text"
+            app:layout_constraintRight_toLeftOf="@+id/userName"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/password_text" />
+            app:layout_constraintTop_toBottomOf="@id/host_text" />
 
         <EditText
             android:id="@+id/userName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:afterTextChanged="@{s -> user.setUserName(s.toString())}"
             android:hint="userName"
             android:text='@{user.userName}'
-            app:layout_constraintBottom_toTopOf="@+id/guideline"
+            app:layout_constraintBottom_toTopOf="@id/password"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/userName_text"
-            app:layout_constraintTop_toBottomOf="@+id/password"
+            app:layout_constraintStart_toEndOf="@id/userName_text"
+            app:layout_constraintTop_toBottomOf="@id/host"
+            app:layout_constraintVertical_chainStyle="packed"
             tools:text="user:@192.108.0.1" />
-
 
         <TextView
             android:id="@+id/password_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="password"
-            app:layout_constraintBottom_toTopOf="@+id/userName_text"
-            app:layout_constraintEnd_toStartOf="@+id/password"
+            app:layout_constraintBottom_toTopOf="@id/guideline"
+            app:layout_constraintEnd_toStartOf="@id/password"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/userName_text" />
 
         <EditText
             android:id="@+id/password"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:afterTextChanged="@{s -> user.setPassword(s.toString())}"
             android:hint="password"
             android:inputType="textPassword"
             android:text='@{user.password}'
-            app:layout_constraintBottom_toTopOf="@+id/userName"
+            app:layout_constraintBottom_toTopOf="@id/guideline"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/password_text"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/password_text"
+            app:layout_constraintTop_toBottomOf="@id/userName"
+            app:layout_constraintVertical_chainStyle="packed"
             tools:text="user:@192.108.0.1" />
 
         <ProgressBar
